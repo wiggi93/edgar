@@ -7,16 +7,20 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
 
-public class main {
+public class EdgarMain {
 
 	static String tsvPath = "C:\\Users\\phili\\Desktop\\2010-QTR1.tsv";
 	static HashMap<String, String> lol = new HashMap<String, String>();
 	static String baseUrl = "https://www.sec.gov/Archives/";
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		
 		System.out.println(tsvPath);
-		parseFile();
+		try {
+			parseFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 	}
 	
