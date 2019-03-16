@@ -8,39 +8,50 @@ import java.util.HashMap;
 
 public class EdgarMain {
 
-    static String folderPath = "C:\\Users\\phili\\Desktop\\tsv";
+    static String folderPath = "";
     static String outputPath = "";
-    static File folder = new File(folderPath);
-    static File[] listOfFiles = folder.listFiles();
     static HashMap<String, EdgarEntry> lol = new HashMap<String, EdgarEntry>();
     static String baseUrl = "https://www.sec.gov/Archives/";
     private static String currentSIC = "";
     private static String currentCIK = "";
-    private static application.ExcelHandler excelHandler;
+    private static ExcelHandler excelHandler;
 
     public static void main(String[] args){
 
         if (args.length>0){
             if (args[0].length()>1){
                 folderPath = args[0];
+                if (!folderPath.endsWith("\\")){
+                    folderPath = folderPath + "\\";
+                }
+                System.out.println(folderPath);
             }
 
             if (args[1].length()>1){
                 outputPath = args[1];
+                if (!outputPath.endsWith("\\")){
+                    outputPath = outputPath + "\\";
+                }
+                System.out.println(outputPath);
             }
-        }
 
-        parseFolder();
-        excelHandler = new ExcelHandler(outputPath);
-        try {
-            excelHandler.createExcel(lol);
-        } catch (IOException e) {
-            e.printStackTrace();
+            parseFolder();
+            excelHandler = new ExcelHandler(outputPath);
+            try {
+                excelHandler.createExcel(lol);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            System.out.println("no input / output folders selected");
         }
 
     }
 
     public static void parseFolder() {
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
         int index = 0;
         for (File i : listOfFiles) {
             try {
@@ -68,6 +79,8 @@ public class EdgarMain {
                 if (currentSIC != null) {
                     EdgarEntry entry = new EdgarEntry(currentCompany, currentCIK, currentSIC);
                     lol.put(currentCompany, entry);
+                    if (lol.size()%50 == 0)
+                        System.out.println(lol.size() + "companies added");
                     currentSIC = null;
                 }
             }

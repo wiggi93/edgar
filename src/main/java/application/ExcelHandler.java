@@ -12,7 +12,7 @@ import java.util.Map;
 public class ExcelHandler {
 
     private static String[] columns = {"Company Name", "CIK", "SIC"};
-    private static String path = "";
+    private static String path;
 
     public ExcelHandler(String path){
         this.path = path;
@@ -20,6 +20,7 @@ public class ExcelHandler {
 
     public void createExcel(HashMap<String, EdgarEntry> lol) throws IOException {
 
+        System.out.println(this.path);
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Edgar");
 
