@@ -89,12 +89,17 @@ public class EdgarMain {
             currentCompany = row.split("\\|")[1];
             filing = row.split("\\|")[2];
 
-            if (!lol.containsKey(currentCompany) && (filing.equals("S-1") || filing.equals("S-1/A"))) {
+            if (!lol.containsKey(currentCompany) && (filing.equals("S-1") || filing.equals("S-1/A") ||
+                    filing.equals("S-11") || filing.equals("S-11/A") || filing.equals("S-8") ||
+                    filing.equals("SC 13G") || filing.equals("SC 13D") || filing.equals("SC 13G/A") ||
+                    filing.equals("SC 13D/A"))) {
+
                 setSIC(row.split("\\|")[4]);
+
                 if (currentSIC != null) {
                     EdgarEntry entry = new EdgarEntry(currentCompany, currentCIK, currentSIC);
                     lol.put(currentCompany, entry);
-                    if (lol.size() % 20 == 0) {
+                    if (lol.size() % 100 == 0) {
                         System.out.println(lol.size() + "companies added");
                         System.out.println("last entry : " + entry.toString());
                     }
