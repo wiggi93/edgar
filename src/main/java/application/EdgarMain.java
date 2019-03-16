@@ -1,9 +1,13 @@
 package application;
 
 import models.EdgarEntry;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
-import java.io.*;
-import java.net.URL;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class EdgarMain {
@@ -18,11 +22,9 @@ public class EdgarMain {
 
     public static void main(String[] args) {
 
-        if (setPaths(args)){
-            parseFolder();
-            exportToExcel();
-        }
-
+        setPaths(args);
+        parseFolder();
+        exportToExcel();
     }
 
     private static void exportToExcel() {
@@ -34,7 +36,7 @@ public class EdgarMain {
         }
     }
 
-    private static boolean setPaths(String[] args) {
+    private static void setPaths(String[] args) {
         if (args.length > 0) {
             if (args[0].length() > 1) {
                 folderPath = args[0];
@@ -51,10 +53,10 @@ public class EdgarMain {
                 }
                 System.out.println(outputPath);
             }
-            return true;
         } else {
-            System.out.println("Please set input / output folder as arguments on execution");
-            return false;
+            folderPath = "C:\\Users\\phili\\Desktop\\tsv\\";
+            outputPath = "C:\\Users\\phili\\Desktop\\";
+            System.out.println("No Input & Output folder selected, using default Paths");
         }
     }
 
@@ -80,18 +82,22 @@ public class EdgarMain {
         BufferedReader br = new BufferedReader(new FileReader(tsvPath));
         String row = "";
         String currentCompany = "";
+        String filing = "";
 
         while ((row = br.readLine()) != null) {
+            currentCIK = row.split("\\|")[0];
             currentCompany = row.split("\\|")[1];
+            filing = row.split("\\|")[2];
 
-            if (!lol.containsKey(currentCompany)) {
-                setSICAndCIK(row.split("\\|")[4]);
-
+            if (!lol.containsKey(currentCompany) && (filing.equals("S-1") || filing.equals("S-1/A"))) {
+                setSIC(row.split("\\|")[4]);
                 if (currentSIC != null) {
                     EdgarEntry entry = new EdgarEntry(currentCompany, currentCIK, currentSIC);
                     lol.put(currentCompany, entry);
-                    if (lol.size() % 50 == 0)
+                    if (lol.size() % 20 == 0) {
                         System.out.println(lol.size() + "companies added");
+                        System.out.println("last entry : " + entry.toString());
+                    }
                     currentSIC = null;
                 }
             }
@@ -99,20 +105,17 @@ public class EdgarMain {
         br.close();
     }
 
-    private static void setSICAndCIK(String linkToCompanyTxt) throws IOException {
+    private static void setSIC(String linkToCompanyTxt) throws IOException {
 
-        URL url = new URL(baseUrl + linkToCompanyTxt);
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+        String url2 = baseUrl + linkToCompanyTxt;
 
-        String inputLine;
-        while ((inputLine = br.readLine()) != null)
-            if (inputLine.split("STANDARD INDUSTRIAL CLASSIFICATION:").length >= 2) {
-                currentSIC = inputLine.split("STANDARD INDUSTRIAL CLASSIFICATION:")[1].split("\\[")[1].substring(0, 4);
-
-            } else if (inputLine.split("CENTRAL INDEX KEY:").length >= 2) {
-                currentCIK = inputLine.split("CENTRAL INDEX KEY:")[1].substring(3, 13);
+        Document doc = Jsoup.connect(url2).get();
+        String text = doc.text();
+        if (text.split("STANDARD INDUSTRIAL CLASSIFICATION:").length >= 2) {
+            currentSIC = text.split("STANDARD INDUSTRIAL CLASSIFICATION:")[1].split("\\[")[1].substring(0, 4);
+            if (text.split("CENTRAL INDEX KEY:").length >= 2) {
+                currentCIK = text.split("CENTRAL INDEX KEY:")[1].substring(1, 11);
             }
-        br.close();
-
+        }
     }
 }
