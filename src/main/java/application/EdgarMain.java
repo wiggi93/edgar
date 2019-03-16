@@ -16,51 +16,62 @@ public class EdgarMain {
     private static String currentCIK = "";
     private static ExcelHandler excelHandler;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
-        if (args.length>0){
-            if (args[0].length()>1){
+        if (setPaths(args)){
+            parseFolder();
+            exportToExcel();
+        }
+
+    }
+
+    private static void exportToExcel() {
+        excelHandler = new ExcelHandler(outputPath);
+        try {
+            excelHandler.createExcel(lol);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean setPaths(String[] args) {
+        if (args.length > 0) {
+            if (args[0].length() > 1) {
                 folderPath = args[0];
-                if (!folderPath.endsWith("\\")){
+                if (!folderPath.endsWith("\\")) {
                     folderPath = folderPath + "\\";
                 }
                 System.out.println(folderPath);
             }
 
-            if (args[1].length()>1){
+            if (args[1].length() > 1) {
                 outputPath = args[1];
-                if (!outputPath.endsWith("\\")){
+                if (!outputPath.endsWith("\\")) {
                     outputPath = outputPath + "\\";
                 }
                 System.out.println(outputPath);
             }
-
-            parseFolder();
-            excelHandler = new ExcelHandler(outputPath);
-            try {
-                excelHandler.createExcel(lol);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            return true;
         } else {
-            System.out.println("no input / output folders selected");
+            System.out.println("Please set input / output folder as arguments on execution");
+            return false;
         }
-
     }
 
     public static void parseFolder() {
-        File folder = new File(folderPath);
-        File[] listOfFiles = folder.listFiles();
-        int index = 0;
-        for (File i : listOfFiles) {
-            try {
-                parseFile(i.getPath());
-                index++;
-                System.out.println("File "+index+" done");
 
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (!folderPath.isEmpty()) {
+            File folder = new File(folderPath);
+            File[] listOfFiles = folder.listFiles();
+            int index = 0;
+            for (File i : listOfFiles) {
+                try {
+                    parseFile(i.getPath());
+                    index++;
+                    System.out.println("File " + index + " done");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -79,7 +90,7 @@ public class EdgarMain {
                 if (currentSIC != null) {
                     EdgarEntry entry = new EdgarEntry(currentCompany, currentCIK, currentSIC);
                     lol.put(currentCompany, entry);
-                    if (lol.size()%50 == 0)
+                    if (lol.size() % 50 == 0)
                         System.out.println(lol.size() + "companies added");
                     currentSIC = null;
                 }
